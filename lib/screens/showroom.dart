@@ -8,18 +8,18 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../utils/format.dart';
 import '../widget/common.dart';
+import '../widget/login_prompt.dart';
 import 'create_vehicle.dart';
 import 'vehicle_detail.dart';
 
-class ShowroomPage extends StatefulWidget {
-  const ShowroomPage({super.key});
+class ShowroomScreen extends StatefulWidget {
+  const ShowroomScreen({super.key});
 
   @override
-
-  State<ShowroomPage> createState() => _ShowroomPageState();
+  State<ShowroomScreen> createState() => _ShowroomScreenState();
 }
 
-class _ShowroomPageState extends State<ShowroomPage> {
+class _ShowroomScreenState extends State<ShowroomScreen> {
   final _scroll = ScrollController();
   final _searchCtrl = TextEditingController();
   Timer? _debounce;
@@ -122,9 +122,11 @@ class _ShowroomPageState extends State<ShowroomPage> {
   }
 
   Future<void> _sell() async {
-    await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(builder: (_) => const CreateVehiclePage()),
+    if (!await requireLogin(context, message: 'Login untuk menambahkan kendaraan')) return;
+    // Logging in rebuilds the tabs (this State is disposed), so push through the
+    // root navigator instead of this widget's context.
+    await rootNavigatorKey.currentState?.push<bool>(
+      MaterialPageRoute(builder: (_) => const CreateVehicleScreen()),
     );
   }
 
@@ -156,14 +158,14 @@ class _ShowroomPageState extends State<ShowroomPage> {
                 _applySearch();
               },
               decoration: InputDecoration(
-                hintText: 'Search brand, model, city...',
+                hintText: 'Cari merek, model, lokasi...',
                 prefixIcon: const Icon(Icons.search),
                 isDense: true,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 suffixIcon: _searchCtrl.text.isEmpty
                     ? null
                     : IconButton(
-                        tooltip: 'Clear',
+                        tooltip: 'Bersihkan',
                         icon: const Icon(Icons.close),
                         onPressed: () {
                           _searchCtrl.clear();
@@ -183,7 +185,7 @@ class _ShowroomPageState extends State<ShowroomPage> {
               _applySearch();
             },
             icon: const Icon(Icons.search),
-            label: const Text('Search'),
+            label: const Text('Cari'),
             style: FilledButton.styleFrom(
               minimumSize: const Size(0, 48),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -210,9 +212,9 @@ class _ShowroomPageState extends State<ShowroomPage> {
             child: DropdownButtonFormField<String>(
               value: _filters.vehicleType,
               isExpanded: true,
-              decoration: _dropdownDecoration('Vehicle type'),
+              decoration: _dropdownDecoration('Jenis kendaraan'),
               items: [
-                const DropdownMenuItem(value: '', child: Text('All types')),
+                const DropdownMenuItem(value: '', child: Text('Semua')),
                 for (final e in kVehicleTypesShort.entries)
                   DropdownMenuItem(value: e.key, child: Text(e.value)),
               ],
@@ -227,7 +229,7 @@ class _ShowroomPageState extends State<ShowroomPage> {
             child: DropdownButtonFormField<String>(
               value: _filters.sort,
               isExpanded: true,
-              decoration: _dropdownDecoration('Sort by'),
+              decoration: _dropdownDecoration('Sortir berdasarkan'),
               items: [
                 for (final e in kSortOptions.entries)
                   DropdownMenuItem(
@@ -250,7 +252,7 @@ class _ShowroomPageState extends State<ShowroomPage> {
               label: Text('${_filters.activeCount}'),
               child: const Icon(Icons.filter_list),
             ),
-            label: const Text('Filters'),
+            label: const Text('Filter'),
             style: OutlinedButton.styleFrom(
               minimumSize: const Size(0, 48),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -280,26 +282,26 @@ class _ShowroomPageState extends State<ShowroomPage> {
       ));
     }
 
-    if (f.brand.isNotEmpty) chip('Brand: ${f.brand}', () => f.brand = '');
+    if (f.brand.isNotEmpty) chip('Merek: ${f.brand}', () => f.brand = '');
     if (f.model.isNotEmpty) chip('Model: ${f.model}', () => f.model = '');
-    if (f.city.isNotEmpty) chip('City: ${f.city}', () => f.city = '');
-    if (f.year != null) chip('Year: ${f.year}', () => f.year = null);
+    if (f.city.isNotEmpty) chip('Lokasi: ${f.city}', () => f.city = '');
+    if (f.year != null) chip('Tahun: ${f.year}', () => f.year = null);
     if (f.minPrice != null || f.maxPrice != null) {
       final lo = f.minPrice == null ? null : formatPrice(f.minPrice!);
       final hi = f.maxPrice == null ? null : formatPrice(f.maxPrice!);
       final label = lo != null && hi != null
           ? '$lo - $hi'
           : lo != null
-              ? 'From $lo'
-              : 'Up to $hi';
-      chip('Price: $label', () {
+              ? 'Dari $lo'
+              : 'Sampai $hi';
+      chip('Harga: $label', () {
         f.minPrice = null;
         f.maxPrice = null;
       });
     }
 
     final hasAny = chips.isNotEmpty || f.vehicleType.isNotEmpty;
-    final summary = StringBuffer('${_total} vehicle${_total == 1 ? '' : 's'}');
+    final summary = StringBuffer('${_total} kendaraan');
     if (f.vehicleType.isNotEmpty) summary.write(' \u2022 ${kVehicleTypesShort[f.vehicleType]}');
     if (f.search.isNotEmpty) summary.write(' \u2022 "${f.search}"');
 
@@ -337,7 +339,7 @@ class _ShowroomPageState extends State<ShowroomPage> {
                 });
                 _refresh();
               },
-              child: const Text('Clear all'),
+              child: const Text('Bersihkan filter'),
             ),
         ],
       ),
@@ -369,7 +371,7 @@ class _ShowroomPageState extends State<ShowroomPage> {
             SizedBox(height: 100),
             Icon(Icons.search_off, size: 56, color: Colors.grey),
             SizedBox(height: 12),
-            Center(child: Text('No vehicles found')),
+            Center(child: Text('Tidak ada kendaraan yang dapat ditemukan')),
           ],
         ),
       );
@@ -397,7 +399,7 @@ class _ShowroomPageState extends State<ShowroomPage> {
             vehicle: v,
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => VehicleDetailPage(vehicleId: v.id)),
+              MaterialPageRoute(builder: (_) => VehicleDetailScreen(vehicleId: v.id)),
             ),
           );
         },
@@ -410,11 +412,20 @@ class _ShowroomPageState extends State<ShowroomPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Showroom'),
+        actions: [
+          if (!AuthService.instance.isLoggedIn)
+            TextButton.icon(
+              onPressed: () => requireLogin(context),
+              icon: const Icon(Icons.login),
+              label: const Text('Log in'),
+            ),
+          const SizedBox(width: 8),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _sell,
         icon: const Icon(Icons.add),
-        label: const Text('Sell'),
+        label: const Text('Jual'),
       ),
       body: Column(
         children: [
@@ -606,7 +617,7 @@ class _FilterSheetState extends State<_FilterSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Filters',
+            Text('Filter',
                 style: Theme.of(context)
                     .textTheme
                     .titleLarge
@@ -617,7 +628,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                 Expanded(
                   child: TextField(
                     controller: _brand,
-                    decoration: const InputDecoration(labelText: 'Brand'),
+                    decoration: const InputDecoration(labelText: 'Merek'),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -635,7 +646,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                 Expanded(
                   child: TextField(
                     controller: _city,
-                    decoration: const InputDecoration(labelText: 'City'),
+                    decoration: const InputDecoration(labelText: 'Lokasi'),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -644,7 +655,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                     controller: _year,
                     keyboardType: TextInputType.number,
                     inputFormatters: digits,
-                    decoration: const InputDecoration(labelText: 'Year'),
+                    decoration: const InputDecoration(labelText: 'Tahun'),
                   ),
                 ),
               ],
@@ -657,7 +668,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                     controller: _minPrice,
                     keyboardType: TextInputType.number,
                     inputFormatters: digits,
-                    decoration: const InputDecoration(labelText: 'Min price'),
+                    decoration: const InputDecoration(labelText: 'Harga terendah'),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -666,7 +677,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                     controller: _maxPrice,
                     keyboardType: TextInputType.number,
                     inputFormatters: digits,
-                    decoration: const InputDecoration(labelText: 'Max price'),
+                    decoration: const InputDecoration(labelText: 'Harga tertinggi'),
                   ),
                 ),
               ],
@@ -679,7 +690,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: FilledButton(onPressed: _apply, child: const Text('Apply')),
+                  child: FilledButton(onPressed: _apply, child: const Text('Filter')),
                 ),
               ],
             ),

@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../widget/common.dart';
 import 'create_account.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class LoginScreen extends StatefulWidget {
+  /// Why the visitor is being asked to log in (e.g. "Log in to list a vehicle").
+  final String? message;
+  const LoginScreen({super.key, this.message});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
@@ -34,7 +37,9 @@ class _LoginPageState extends State<LoginPage> {
     });
     try {
       await AuthService.instance.login(_email.text.trim(), _password.text);
-      // AuthGate swaps this screen for the main app.
+      // The app is public, so this screen is a pushed route: go back to
+      // whatever the visitor was doing.
+      if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) setState(() => _error = errorText(e));
     } finally {
@@ -46,6 +51,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -63,7 +69,7 @@ class _LoginPageState extends State<LoginPage> {
                         textAlign: TextAlign.center,
                         style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
-                    Text('Buy and sell vehicles',
+                    Text(widget.message ?? 'Jual beli kendaraan',
                         textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
                     const SizedBox(height: 32),
                     TextFormField(
@@ -76,9 +82,9 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       validator: (v) {
                         final t = (v ?? '').trim();
-                        if (t.isEmpty) return 'Enter your email';
+                        if (t.isEmpty) return 'Masukkan email anda';
                         if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(t)) {
-                          return 'Enter a valid email';
+                          return 'Masukkan email yang valid';
                         }
                         return null;
                       },
@@ -97,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                           onPressed: () => setState(() => _obscure = !_obscure),
                         ),
                       ),
-                      validator: (v) => (v == null || v.isEmpty) ? 'Enter your password' : null,
+                      validator: (v) => (v == null || v.isEmpty) ? 'Masukkan password anda' : null,
                     ),
                     if (_error != null) ...[
                       const SizedBox(height: 16),
@@ -121,11 +127,17 @@ class _LoginPageState extends State<LoginPage> {
                     TextButton(
                       onPressed: _busy
                           ? null
-                          : () => Navigator.push(
+                          : () async {
+                              await Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => const CreateAccountPage()),
-                              ),
-                      child: const Text('Create an account'),
+                                MaterialPageRoute(builder: (_) => const CreateAccountScreen()),
+                              );
+                              // Registering also logs the user in: go back too.
+                              if (mounted && AuthService.instance.isLoggedIn) {
+                                Navigator.of(context).pop(true);
+                              }
+                            },
+                      child: const Text('Buat akun'),
                     ),
                     const SizedBox(height: 24),
                     Text('Server: ${api.baseUrl}',

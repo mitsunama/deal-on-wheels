@@ -1,28 +1,31 @@
 import 'package:flutter/material.dart';
+
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../widget/common.dart';
 import '../widget/vehicle_form.dart';
 
-class UpdateVehiclePage extends StatefulWidget {
+/// Edit a vehicle. The API only allows edits while the vehicle is `available`
+/// (a pending deal must not change under the buyer), and only by the seller.
+class UpdateVehicleScreen extends StatefulWidget {
   final Vehicle vehicle;
-  const UpdateVehiclePage({super.key, required this.vehicle});
+  const UpdateVehicleScreen({super.key, required this.vehicle});
 
   @override
-  State<UpdateVehiclePage> createState() => _UpdateVehiclePageState();
+  State<UpdateVehicleScreen> createState() => _UpdateVehicleScreenState();
 }
 
-class _UpdateVehiclePageState extends State<UpdateVehiclePage> {
+class _UpdateVehicleScreenState extends State<UpdateVehicleScreen> {
   late final List<VehicleImage> _images = List.of(widget.vehicle.images);
   String? _removingId;
 
   Future<void> _removeImage(VehicleImage img) async {
     final ok = await confirmDialog(
       context,
-      title: 'Remove photo?',
-      message: 'This photo will be deleted from the listing.',
-      confirmLabel: 'Remove',
+      title: 'Hapus foto?',
+      message: 'Foto akan dihapus dari listing.',
+      confirmLabel: 'Hapus',
       destructive: true,
     );
     if (!ok || !mounted) return;
@@ -57,8 +60,8 @@ class _UpdateVehiclePageState extends State<UpdateVehiclePage> {
     messenger.showSnackBar(SnackBar(
       behavior: SnackBarBehavior.floating,
       content: Text(photoProblem == null
-          ? 'Changes saved'
-          : 'Changes saved, but photos failed to upload: $photoProblem'),
+          ? 'Perubahan tersimpan'
+          : 'Perubahan tersimpan, namun gagal mengunggah foto: $photoProblem'),
     ));
   }
 
@@ -66,7 +69,7 @@ class _UpdateVehiclePageState extends State<UpdateVehiclePage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit vehicle')),
+      appBar: AppBar(title: const Text('Edit kendaraan')),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -76,11 +79,11 @@ class _UpdateVehiclePageState extends State<UpdateVehiclePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('Current photos',
+                  Text('Foto yang sudah ada',
                       style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   if (_images.isEmpty)
-                    Text('No photos yet.',
+                    Text('Tidak ada foto.',
                         style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey))
                   else
                     SizedBox(
@@ -127,7 +130,7 @@ class _UpdateVehiclePageState extends State<UpdateVehiclePage> {
                   const Divider(height: 32),
                   VehicleForm(
                     initial: widget.vehicle,
-                    submitLabel: 'Save changes',
+                    submitLabel: 'Simpan perubahan',
                     maxNewImages: 10 - _images.length,
                     onSubmit: _save,
                   ),

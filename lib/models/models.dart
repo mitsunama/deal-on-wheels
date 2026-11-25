@@ -18,21 +18,21 @@ DateTime? asDate(dynamic v) {
 
 /// under_4 = fewer than 4 wheels (motorcycle, scooter...), four_plus = 4 wheels or more.
 const Map<String, String> kVehicleTypes = {
-  'under_4': 'Under 4 wheels (motorcycle, etc.)',
-  'four_plus': '4 wheels or more (car, truck, etc.)',
+  'under_4': 'Roda kurang dari 4 (sepeda motor, dsb.)',
+  'four_plus': 'Roda 4 atau lebih (mobil, truk, dsb.)',
 };
 
 /// Short labels for the compact showroom dropdown and chips.
 const Map<String, String> kVehicleTypesShort = {
-  'under_4': 'Under 4 wheels',
-  'four_plus': '4+ wheels',
+  'under_4': 'Roda > 4',
+  'four_plus': 'Roda 4 atau lebih',
 };
 
 const Map<String, String> kSortOptions = {
-  'newest': 'Newest',
-  'price_asc': 'Price: low to high',
-  'price_desc': 'Price: high to low',
-  'year_desc': 'Year: newest first',
+  'newest': 'Listing terbaru',
+  'price_asc': 'Harga terendah sampai tertinggi',
+  'price_desc': 'Harga tertinggi sampai terendah',
+  'year_desc': 'Tahun kendaraan terbaru',
 };
 
 // ---------------------------------------------------------------- User

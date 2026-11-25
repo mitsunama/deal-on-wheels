@@ -7,17 +7,19 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../utils/format.dart';
 import '../widget/common.dart';
+import '../widget/image_viewer.dart';
+import '../widget/login_prompt.dart';
 import 'update_vehicle.dart';
 
-class VehicleDetailPage extends StatefulWidget {
+class VehicleDetailScreen extends StatefulWidget {
   final String vehicleId;
-  const VehicleDetailPage({super.key, required this.vehicleId});
+  const VehicleDetailScreen({super.key, required this.vehicleId});
 
   @override
-  State<VehicleDetailPage> createState() => _VehicleDetailPageState();
+  State<VehicleDetailScreen> createState() => _VehicleDetailScreenState();
 }
 
-class _VehicleDetailPageState extends State<VehicleDetailPage> {
+class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
   final _pageCtrl = PageController();
   Vehicle? _vehicle;
   bool _loading = true;
@@ -25,7 +27,8 @@ class _VehicleDetailPageState extends State<VehicleDetailPage> {
   String? _error;
   int _imgIndex = 0;
 
-  bool get _isOwner => _vehicle?.sellerId == AuthService.instance.user?.id;
+  bool get _isOwner => AuthService.instance.isLoggedIn &&
+      _vehicle?.sellerId == AuthService.instance.user?.id;
 
   @override
   void initState() {
@@ -68,6 +71,13 @@ class _VehicleDetailPageState extends State<VehicleDetailPage> {
   /// Transactions tab where the new deal is listed.
   Future<void> _startDeal() async {
     final v = _vehicle!;
+    if (!await requireLogin(context, message: 'Login untuk membeli kendaraan')) return;
+    if (!mounted) return;
+    setState(() {}); // the visitor is now logged in: refresh owner-dependent UI
+    if (_isOwner) {
+      showSnack(context, 'Ini listing Anda.', error: true);
+      return;
+    }
     final offer = await showDialog<int>(
       context: context,
       builder: (_) => _OfferDialog(listedPrice: v.price),
@@ -82,7 +92,7 @@ class _VehicleDetailPageState extends State<VehicleDetailPage> {
       AppEvents.selectedTab.value = 1;
       messenger.showSnackBar(const SnackBar(
         behavior: SnackBarBehavior.floating,
-        content: Text('Deal started. Waiting for the seller to confirm.'),
+        content: Text('Transaksi dimulai. Menunggu konfirmasi penjual.'),
       ));
       if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } catch (e) {
@@ -96,7 +106,7 @@ class _VehicleDetailPageState extends State<VehicleDetailPage> {
   Future<void> _edit() async {
     await Navigator.push<bool>(
       context,
-      MaterialPageRoute(builder: (_) => UpdateVehiclePage(vehicle: _vehicle!)),
+      MaterialPageRoute(builder: (_) => UpdateVehicleScreen(vehicle: _vehicle!)),
     );
     if (mounted) _load(silent: true);
   }
@@ -104,9 +114,9 @@ class _VehicleDetailPageState extends State<VehicleDetailPage> {
   Future<void> _delete() async {
     final ok = await confirmDialog(
       context,
-      title: 'Delete listing?',
-      message: 'This removes the vehicle from the showroom.',
-      confirmLabel: 'Delete',
+      title: 'Hapus listing?',
+      message: 'Kendaraan akan dihapus dari showroom.',
+      confirmLabel: 'Hapus',
       destructive: true,
     );
     if (!ok || !mounted) return;
@@ -131,6 +141,13 @@ class _VehicleDetailPageState extends State<VehicleDetailPage> {
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeOut,
     );
+  }
+
+  Future<void> _openFullView(Vehicle v) async {
+    final urls = v.images.map((i) => i.url).toList();
+    if (urls.isEmpty) return;
+    final last = await FullImageViewer.open(context, urls, _imgIndex);
+    if (last != null && mounted && _pageCtrl.hasClients) _pageCtrl.jumpToPage(last);
   }
 
   Widget _arrow(IconData icon, String tooltip, VoidCallback? onPressed,
@@ -175,19 +192,47 @@ class _VehicleDetailPageState extends State<VehicleDetailPage> {
                 controller: _pageCtrl,
                 itemCount: count,
                 onPageChanged: (i) => setState(() => _imgIndex = i),
-                itemBuilder: (_, i) => NetImage(url: images[i].url),
+                itemBuilder: (_, i) => GestureDetector(
+                  onTap: () => _openFullView(v),
+                  child: NetImage(url: images[i].url),
+                ),
+              ),
+            ),
+          if (count > 0)
+            Positioned(
+              left: 12,
+              top: 12,
+              child: Material(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(18),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(18),
+                  onTap: () => _openFullView(v),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.fullscreen, color: Colors.white, size: 18),
+                        SizedBox(width: 6),
+                        Text('Tampilan penuh',
+                            style: TextStyle(color: Colors.white, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           if (count > 1) ...[
             _arrow(
               Icons.chevron_left,
-              'Previous photo',
+              'Foto sebelumnya',
               _imgIndex > 0 ? () => _goToImage(_imgIndex - 1, count) : null,
               align: Alignment.centerLeft,
             ),
             _arrow(
               Icons.chevron_right,
-              'Next photo',
+              'Foto selanjutnya',
               _imgIndex < count - 1 ? () => _goToImage(_imgIndex + 1, count) : null,
               align: Alignment.centerRight,
             ),
@@ -293,8 +338,8 @@ class _VehicleDetailPageState extends State<VehicleDetailPage> {
                   style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
               Text(
-                'Listed by @${v.sellerUsername ?? 'unknown'}'
-                '${_isOwner ? ' (you)' : ''} \u2022 ${formatDate(v.createdAt)}',
+                'Di-list oleh @${v.sellerUsername ?? 'unknown'}'
+                '${_isOwner ? ' (anda)' : ''} \u2022 ${formatDate(v.createdAt)}',
                 style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
               ),
               const SizedBox(height: 16),
@@ -302,26 +347,26 @@ class _VehicleDetailPageState extends State<VehicleDetailPage> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  _fact(Icons.two_wheeler, 'Type', kVehicleTypes[v.vehicleType] ?? v.vehicleType),
-                  _fact(Icons.business, 'Brand', v.brand),
+                  _fact(Icons.two_wheeler, 'Tipe', kVehicleTypes[v.vehicleType] ?? v.vehicleType),
+                  _fact(Icons.business, 'Merek', v.brand),
                   _fact(Icons.directions_car, 'Model', v.model),
-                  _fact(Icons.calendar_today, 'Year', '${v.year}'),
-                  _fact(Icons.speed, 'Mileage', v.mileageKm == null ? null : formatKm(v.mileageKm)),
-                  _fact(Icons.settings, 'Transmission', v.transmission),
-                  _fact(Icons.local_gas_station, 'Fuel', v.fuelType),
-                  _fact(Icons.place_outlined, 'City', v.city),
+                  _fact(Icons.calendar_today, 'Tahun', '${v.year}'),
+                  _fact(Icons.speed, 'Kilometer', v.mileageKm == null ? null : formatKm(v.mileageKm)),
+                  _fact(Icons.settings, 'Transmisi', v.transmission),
+                  _fact(Icons.local_gas_station, 'Bahan bakar', v.fuelType),
+                  _fact(Icons.place_outlined, 'Lokasi', v.city),
                 ],
               ),
               if ((v.description ?? '').isNotEmpty) ...[
                 const SizedBox(height: 20),
-                Text('Description',
+                Text('Deskripsi',
                     style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 6),
                 Text(v.description!),
               ],
               if (v.specs.isNotEmpty) ...[
                 const SizedBox(height: 20),
-                Text('Specifications',
+                Text('Spesifikasi',
                     style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 for (final e in v.specs.entries)
@@ -359,8 +404,8 @@ class _VehicleDetailPageState extends State<VehicleDetailPage> {
     Widget child;
     if (_isOwner) {
       final hint = v.status == 'pending'
-          ? 'A buyer started a deal. Confirm or cancel it in the Transactions tab.'
-          : 'This vehicle has been sold.';
+          ? 'Sebuah pembeli telah memulai transaksi. Konfirmasi atau batalkan di menu Transaksi.'
+          : 'Kendaraan telah dijual.';
       if (v.status == 'available') {
         child = Row(
           children: [
@@ -377,7 +422,7 @@ class _VehicleDetailPageState extends State<VehicleDetailPage> {
               child: OutlinedButton.icon(
                 onPressed: _busy ? null : _delete,
                 icon: const Icon(Icons.delete_outline),
-                label: const Text('Delete listing'),
+                label: const Text('Hapus listing'),
                 style: _boxedStyle(theme.colorScheme.error),
               ),
             ),
@@ -402,14 +447,14 @@ class _VehicleDetailPageState extends State<VehicleDetailPage> {
             : const Icon(Icons.handshake_outlined),
         label: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Text('Buy for ${formatPrice(v.price)}'),
+          child: Text('Beli seharga ${formatPrice(v.price)}'),
         ),
       );
     } else {
       child = Text(
         v.status == 'pending'
-            ? 'This vehicle has a deal in progress and is not available right now.'
-            : 'This vehicle has been sold.',
+            ? 'Kendaraan sedang dalam proses transaksi dan tidak tersedia untuk saat ini.'
+            : 'Kendaraan telah dijual.',
         textAlign: TextAlign.center,
         style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
       );
@@ -431,12 +476,12 @@ class _VehicleDetailPageState extends State<VehicleDetailPage> {
     final v = _vehicle;
     return Scaffold(
       appBar: AppBar(
-        title: Text(v?.title ?? 'Vehicle', overflow: TextOverflow.ellipsis),
+        title: Text(v?.title ?? 'Kendaraan', overflow: TextOverflow.ellipsis),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : (_error != null || v == null)
-              ? ErrorView(message: _error ?? 'Vehicle not found', onRetry: _load)
+              ? ErrorView(message: _error ?? 'Kendaraan tidak ditemukan', onRetry: _load)
               : Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 800),
@@ -475,7 +520,7 @@ class _OfferDialogState extends State<_OfferDialog> {
   void _confirm() {
     final p = int.tryParse(_price.text.trim());
     if (p == null || p <= 0) {
-      setState(() => _error = 'Enter a price greater than 0');
+      setState(() => _error = 'Masukkan harga lebih dari 0');
       return;
     }
     Navigator.pop(context, p);
@@ -484,17 +529,17 @@ class _OfferDialogState extends State<_OfferDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Start a deal'),
+      title: const Text('Mulai transaksi'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Listed price: ${formatPrice(widget.listedPrice)}'),
+            Text('Harga awal: ${formatPrice(widget.listedPrice)}'),
             const SizedBox(height: 4),
             const Text(
-              'The vehicle will be reserved for you. The seller must confirm the '
-              'sale to complete it, and either of you can cancel while it is pending.',
+              'Kendaraan telah berada dalam proses transaksi. Pembeli harus mengonfirmasi '
+              'penjualan, Anda maupun penjual dapat membatalkan proses transaksi.',
               style: TextStyle(color: Colors.grey, fontSize: 13),
             ),
             const SizedBox(height: 16),
@@ -505,7 +550,7 @@ class _OfferDialogState extends State<_OfferDialog> {
               autofocus: true,
               onSubmitted: (_) => _confirm(),
               decoration: InputDecoration(
-                labelText: 'Agreed price',
+                labelText: 'Harga nego',
                 prefixText: 'Rp ',
                 errorText: _error,
               ),
@@ -514,8 +559,8 @@ class _OfferDialogState extends State<_OfferDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-        FilledButton(onPressed: _confirm, child: const Text('Start deal')),
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+        FilledButton(onPressed: _confirm, child: const Text('Mulai transaksi')),
       ],
     );
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'screens/login.dart';
 import 'services/auth_service.dart';
 import 'widget/navigation.dart';
 
@@ -29,9 +28,9 @@ class DealOnWheelsApp extends StatelessWidget {
   }
 }
 
-/// Shows the login screen or the main app depending on the session.
-/// Login, register, logout and expired tokens all just change AuthService,
-/// so no screen needs to navigate manually.
+/// The main app is public: visitors can browse the showroom without an account.
+/// Login is only requested before a transaction (see requireLogin). Login,
+/// register, logout and expired tokens all just change AuthService.
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
@@ -44,11 +43,9 @@ class AuthGate extends StatelessWidget {
         if (!auth.isReady) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-        if (auth.isLoggedIn) {
-          // Keyed by user so switching accounts rebuilds every tab from scratch.
-          return NavigationPage(key: ValueKey(auth.user!.id));
-        }
-        return const LoginPage();
+        // Keyed by user so switching accounts (or logging in/out) rebuilds
+        // every tab from scratch.
+        return MainNavigation(key: ValueKey(auth.user?.id ?? 'guest'));
       },
     );
   }

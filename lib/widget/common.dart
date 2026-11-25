@@ -115,7 +115,7 @@ class NetImage extends StatelessWidget {
       errorBuilder: (_, error, __) {
         // A broken-image icon (not the car) means the URL exists but could not
         // be loaded. The URL is printed so it can be opened in a browser.
-        debugPrint('Image failed to load: $u -> $error');
+        debugPrint('Gagal memuat gambar: $u -> $error');
         return _placeholder(broken: true);
       },
       loadingBuilder: (context, child, progress) => progress == null
@@ -154,7 +154,7 @@ class ErrorView extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Try again'),
+                label: const Text('Coba lagi'),
               ),
             ],
           ],
@@ -202,7 +202,7 @@ Future<List<PickedImage>> pickImages(
   bool multiple = true,
 }) async {
   if (maxCount <= 0) {
-    showSnack(context, 'Maximum number of photos reached', error: true);
+    showSnack(context, 'Foto telah mencapai jumlah maksimal', error: true);
     return [];
   }
   List<XFile> files;
@@ -217,16 +217,16 @@ Future<List<PickedImage>> pickImages(
   final problems = <String>[];
   for (final f in files) {
     if (out.length >= maxCount) {
-      problems.add('Only $maxCount photo(s) can be added');
+      problems.add('Hanya dapat menambahkan $maxCount foto');
       break;
     }
     final bytes = await f.readAsBytes();
     if (sniffImageMime(bytes) == null) {
-      problems.add('${f.name}: only JPEG, PNG or WebP are allowed');
+      problems.add('${f.name}: hanya JPEG, PNG, atau WebP yang diperbolehkan');
       continue;
     }
     if (bytes.length > 25 * 1024 * 1024) {
-      problems.add('${f.name}: file is too large');
+      problems.add('${f.name}: file terlalu besar');
       continue;
     }
     var data = bytes;
@@ -239,7 +239,7 @@ Future<List<PickedImage>> pickImages(
       }
     }
     if (data.length > maxBytes) {
-      problems.add('${f.name}: still larger than ${maxBytes ~/ (1024 * 1024)} MB after resizing');
+      problems.add('${f.name}: masih lebih besar dari ${maxBytes ~/ (1024 * 1024)} MB setelah resize');
       continue;
     }
     out.add(PickedImage(name, data));

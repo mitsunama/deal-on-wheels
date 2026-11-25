@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../widget/common.dart';
 import '../widget/vehicle_form.dart';
 import 'vehicle_detail.dart';
 
-class CreateVehiclePage extends StatelessWidget {
-  const CreateVehiclePage({super.key});
+class CreateVehicleScreen extends StatelessWidget {
+  const CreateVehicleScreen({super.key});
 
   Future<void> _create(
     BuildContext context,
@@ -31,22 +32,21 @@ class CreateVehiclePage extends StatelessWidget {
     final navigator = Navigator.of(context);
     final messenger = ScaffoldMessenger.of(context);
     navigator.pushReplacement(
-      MaterialPageRoute(builder: (_) => VehicleDetailPage(vehicleId: vehicle.id)),
+      MaterialPageRoute(builder: (_) => VehicleDetailScreen(vehicleId: vehicle.id)),
     );
     messenger.showSnackBar(SnackBar(
       behavior: SnackBarBehavior.floating,
       content: Text(photoProblem == null
-          ? 'Vehicle listed'
-          : 'Vehicle listed, but photos failed to upload: $photoProblem. '
-              'You can add them via Edit.'),
+          ? 'Kendaraan berhasil di-list'
+          : 'Kendaraan berhasil di-list, namun gagal mengunggah foto: $photoProblem. '
+              'Anda dapat menambahkannya menggunakan tombol Edit.'),
     ));
   }
 
   @override
-
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Buat Listing Baru')),
+      appBar: AppBar(title: const Text('Jual kendaraan')),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -54,7 +54,7 @@ class CreateVehiclePage extends StatelessWidget {
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: VehicleForm(
-                submitLabel: 'List vehicle',
+                submitLabel: 'Tambahkan kendaraan ke list',
                 onSubmit: (payload, images) => _create(context, payload, images),
               ),
             ),

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
+
 import '../services/auth_service.dart';
 import '../widget/common.dart';
 
-class CreateAccountPage extends StatefulWidget {
-  const CreateAccountPage({super.key});
+class CreateAccountScreen extends StatefulWidget {
+  const CreateAccountScreen({super.key});
 
   @override
-  State<CreateAccountPage> createState() => _CreateAccountPageState();
-
+  State<CreateAccountScreen> createState() => _CreateAccountScreenState();
 }
 
-class _CreateAccountPageState extends State<CreateAccountPage> {
+class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _formKey = GlobalKey<FormState>();
   final _username = TextEditingController();
   final _email = TextEditingController();
@@ -38,9 +38,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     try {
       await AuthService.instance
           .register(_username.text.trim(), _email.text.trim(), _password.text);
-      // Registered and logged in: AuthGate now shows the main app underneath
-      // this pushed route, so pop back to it.
-      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+      // Registered and logged in: the login screen below pops itself next.
+      if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) setState(() => _error = errorText(e));
     } finally {
@@ -52,7 +51,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Create account')),
+      appBar: AppBar(title: const Text('Buat akun')),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -68,14 +67,14 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       controller: _username,
                       decoration: const InputDecoration(
                         labelText: 'Username',
-                        helperText: 'Letters, numbers and underscores (3-30)',
+                        helperText: 'Huruf, angka, dan underscore (3-30 karakter)',
                         prefixIcon: Icon(Icons.person_outline),
                       ),
                       validator: (v) {
                         final t = (v ?? '').trim();
-                        if (t.length < 3 || t.length > 30) return 'Must be 3-30 characters';
+                        if (t.length < 3 || t.length > 30) return 'Harus memiliki 3-30 karakter';
                         if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(t)) {
-                          return 'Only letters, numbers and underscores';
+                          return 'Hanya huruf, angka, dan underscore';
                         }
                         return null;
                       },
@@ -91,7 +90,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       validator: (v) {
                         final t = (v ?? '').trim();
                         if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(t)) {
-                          return 'Enter a valid email';
+                          return 'Masukkan email yang valid';
                         }
                         return null;
                       },
@@ -102,7 +101,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       obscureText: _obscure,
                       decoration: InputDecoration(
                         labelText: 'Password',
-                        helperText: 'At least 8 characters',
+                        helperText: 'Minimal 8 karakter',
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
@@ -111,8 +110,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       ),
                       validator: (v) {
                         final t = v ?? '';
-                        if (t.length < 8) return 'At least 8 characters';
-                        if (t.length > 100) return 'At most 100 characters';
+                        if (t.length < 8) return 'Minimal 8 karakter';
+                        if (t.length > 100) return 'Maksimal 100 karakter';
                         return null;
                       },
                     ),
@@ -122,10 +121,10 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       obscureText: _obscure,
                       onFieldSubmitted: (_) => _submit(),
                       decoration: const InputDecoration(
-                        labelText: 'Confirm password',
+                        labelText: 'Konfirmasi password',
                         prefixIcon: Icon(Icons.lock_outline),
                       ),
-                      validator: (v) => v != _password.text ? 'Passwords do not match' : null,
+                      validator: (v) => v != _password.text ? 'Kedua password tidak sesuai' : null,
                     ),
                     if (_error != null) ...[
                       const SizedBox(height: 16),

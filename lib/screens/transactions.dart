@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
@@ -6,20 +7,25 @@ import '../utils/format.dart';
 import '../widget/common.dart';
 import 'vehicle_detail.dart';
 
-class TransactionsPage extends StatefulWidget {
-  const TransactionsPage({super.key});
+/// Lists the signed-in user's deals (as buyer and as seller).
+///
+/// Lifecycle (enforced by the API):
+///   buyer starts deal  -> transaction `pending`,  vehicle `pending`
+///   seller completes   -> transaction `completed`, vehicle `sold`
+///   buyer/seller cancel-> transaction `cancelled`, vehicle `available`
+class TransactionsScreen extends StatefulWidget {
+  const TransactionsScreen({super.key});
 
   @override
-
-  State<TransactionsPage> createState() => _TransactionsPageState();
+  State<TransactionsScreen> createState() => _TransactionsScreenState();
 }
 
-class _TransactionsPageState extends State<TransactionsPage> {
-static const _statuses = {
-    '': 'All',
-    'pending': 'Pending',
-    'completed': 'Completed',
-    'cancelled': 'Cancelled',
+class _TransactionsScreenState extends State<TransactionsScreen> {
+  static const _statuses = {
+    '': 'Semua',
+    'pending': 'Dalam transaksi',
+    'completed': 'Selesai',
+    'cancelled': 'Batal',
   };
 
   final _scroll = ScrollController();
@@ -132,9 +138,9 @@ static const _statuses = {
           SegmentedButton<String>(
             showSelectedIcon: false,
             segments: const [
-              ButtonSegment(value: '', label: Text('All')),
-              ButtonSegment(value: 'buyer', label: Text('Buying')),
-              ButtonSegment(value: 'seller', label: Text('Selling')),
+              ButtonSegment(value: '', label: Text('Semua')),
+              ButtonSegment(value: 'buyer', label: Text('Beli')),
+              ButtonSegment(value: 'seller', label: Text('Jual')),
             ],
             selected: {_role},
             onSelectionChanged: (s) {
@@ -192,11 +198,11 @@ static const _statuses = {
             SizedBox(height: 100),
             Icon(Icons.receipt_long_outlined, size: 56, color: Colors.grey),
             SizedBox(height: 12),
-            Center(child: Text('No transactions yet')),
+            Center(child: Text('Tidak ada transaksi.')),
             SizedBox(height: 4),
             Center(
               child: Text(
-                'Open a vehicle in the Showroom and tap "Buy" to start a deal.',
+                'Pilih sebuah kendaraan di Showroom dan tekan tombol "Beli" untuk bertransaksi.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey),
               ),
@@ -231,7 +237,7 @@ static const _statuses = {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transactions'),
+        title: const Text('Transaksi'),
         actions: [
           IconButton(
             tooltip: 'Refresh',
@@ -281,13 +287,13 @@ class _TransactionTile extends StatelessWidget {
           child: Icon(selling ? Icons.sell_outlined : Icons.shopping_bag_outlined),
         ),
         title: Text(
-          transaction.vehicleTitle ?? 'Vehicle',
+          transaction.vehicleTitle ?? 'Kendaraan',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
-          '${selling ? 'Selling' : 'Buying'} \u2022 ${formatPrice(transaction.agreedPrice)}\n'
+          '${selling ? 'Jual' : 'Beli'} \u2022 ${formatPrice(transaction.agreedPrice)}\n'
           '${formatDate(transaction.createdAt)}',
         ),
         trailing: StatusChip(status: transaction.status),
@@ -349,13 +355,13 @@ class _TransactionDetailSheetState extends State<TransactionDetailSheet> {
     final t = _tx!;
     final ok = await confirmDialog(
       context,
-      title: complete ? 'Confirm sale?' : 'Cancel this deal?',
+      title: complete ? 'Konfirmasi penjualan?' : 'Batalkan transaksi?',
       message: complete
-          ? 'This marks the vehicle as sold to ${t.buyerUsername ?? 'the buyer'} '
-              'for ${formatPrice(t.agreedPrice)}. It cannot be undone.'
-          : 'The deal will be cancelled and the vehicle becomes available again. '
-              'This cannot be undone.',
-      confirmLabel: complete ? 'Confirm sale' : 'Cancel deal',
+          ? 'Kendaraan telah dijual kepada ${t.buyerUsername ?? 'the buyer'} '
+              'dengan harga ${formatPrice(t.agreedPrice)}. Penjualan tidak dapat dibatalkan.'
+          : 'Transaksi telah dibatalkan dan kendaraan telah kembali tersedia. '
+              'Tindakan tidak dapat dibatalkan.',
+      confirmLabel: complete ? 'Konfirmasi penjualan' : 'Batalkan transaksi',
       destructive: !complete,
     );
     if (!ok || !mounted) return;
@@ -375,8 +381,8 @@ class _TransactionDetailSheetState extends State<TransactionDetailSheet> {
       await _load(silent: true);
       if (mounted) {
         setState(() => _notice = complete
-            ? 'Sale confirmed. The vehicle is now marked as sold.'
-            : 'Deal cancelled. The vehicle is available again.');
+            ? 'Penjualan dikonfirmasi. Kendaraan telah dijual.'
+            : 'Transaksi dibatalkan. Kendaraan kembali tersedia.');
       }
     } catch (e) {
       if (mounted) setState(() => _actionError = errorText(e));
@@ -444,26 +450,26 @@ class _TransactionDetailSheetState extends State<TransactionDetailSheet> {
         Row(
           children: [
             Expanded(
-              child: Text('Transaction',
+              child: Text('Transaksi',
                   style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
             ),
             StatusChip(status: t.status),
           ],
         ),
         const SizedBox(height: 12),
-        Text(t.vehicleTitle ?? 'Vehicle',
+        Text(t.vehicleTitle ?? 'Kendaraan',
             style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
         if (carName.isNotEmpty) Text(carName, style: const TextStyle(color: Colors.grey)),
         const Divider(height: 28),
-        _row('Agreed price', formatPrice(t.agreedPrice), bold: true),
-        _row('Your role', isSeller ? 'Seller' : 'Buyer'),
-        _row('Buyer',
-            '@${t.buyerUsername ?? '-'}${t.buyerId == me ? '  (you)' : ''}'),
-        _row('Seller',
-            '@${t.sellerUsername ?? '-'}${t.sellerId == me ? '  (you)' : ''}'),
-        _row('Started', formatDate(t.createdAt)),
-        if (t.completedAt != null) _row('Completed', formatDate(t.completedAt)),
-        _row('Reference', t.id.length >= 8 ? t.id.substring(0, 8) : t.id),
+        _row('Harga akhir', formatPrice(t.agreedPrice), bold: true),
+        _row('Peran Anda', isSeller ? 'Penjual' : 'Pembeli'),
+        _row('Pembeli',
+            '@${t.buyerUsername ?? '-'}${t.buyerId == me ? '  (anda)' : ''}'),
+        _row('Penjual',
+            '@${t.sellerUsername ?? '-'}${t.sellerId == me ? '  (anda)' : ''}'),
+        _row('Dimulai', formatDate(t.createdAt)),
+        if (t.completedAt != null) _row('Selesai', formatDate(t.completedAt)),
+        _row('Referensi', t.id.length >= 8 ? t.id.substring(0, 8) : t.id),
         if (_notice != null) _banner(_notice!, error: false),
         if (_actionError != null) _banner(_actionError!, error: true),
         const SizedBox(height: 16),
@@ -473,11 +479,11 @@ class _TransactionDetailSheetState extends State<TransactionDetailSheet> {
               : () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => VehicleDetailPage(vehicleId: t.vehicleId),
+                      builder: (_) => VehicleDetailScreen(vehicleId: t.vehicleId),
                     ),
                   ),
           icon: const Icon(Icons.directions_car_outlined),
-          label: const Text('View vehicle'),
+          label: const Text('Lihat kendaraan'),
         ),
         if (t.isPending) ...[
           const SizedBox(height: 8),
@@ -485,13 +491,13 @@ class _TransactionDetailSheetState extends State<TransactionDetailSheet> {
             FilledButton.icon(
               onPressed: _busy ? null : () => _act(true),
               icon: const Icon(Icons.check_circle_outline),
-              label: const Text('Confirm sale'),
+              label: const Text('Konfirmasi penjualan'),
             )
           else
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Text(
-                'Waiting for the seller to confirm this sale.',
+                'Menunggu persetujuan penjual.',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
               ),
@@ -501,7 +507,7 @@ class _TransactionDetailSheetState extends State<TransactionDetailSheet> {
             style: OutlinedButton.styleFrom(foregroundColor: theme.colorScheme.error),
             onPressed: _busy ? null : () => _act(false),
             icon: const Icon(Icons.cancel_outlined),
-            label: const Text('Cancel deal'),
+            label: const Text('Batalkan transaksi'),
           ),
         ],
         if (_busy)
@@ -521,7 +527,7 @@ class _TransactionDetailSheetState extends State<TransactionDetailSheet> {
     } else if (_error != null || _tx == null) {
       child = SizedBox(
         height: 240,
-        child: ErrorView(message: _error ?? 'Not found', onRetry: _load),
+        child: ErrorView(message: _error ?? 'Tidak ditemukan', onRetry: _load),
       );
     } else {
       child = _content(_tx!);

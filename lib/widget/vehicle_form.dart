@@ -181,7 +181,7 @@ class _VehicleFormState extends State<VehicleForm> {
           DropdownButtonFormField<String>(
             value: _vehicleType,
             isExpanded: true,
-            decoration: const InputDecoration(labelText: 'Vehicle type *'),
+            decoration: const InputDecoration(labelText: 'Tipe kendaraan *'),
             items: [
               for (final e in kVehicleTypes.entries)
                 DropdownMenuItem(value: e.key, child: Text(e.value, overflow: TextOverflow.ellipsis)),
@@ -191,7 +191,7 @@ class _VehicleFormState extends State<VehicleForm> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _title,
-            decoration: const InputDecoration(labelText: 'Title *'),
+            decoration: const InputDecoration(labelText: 'Judul *'),
             validator: (v) => _required(v, 'Title', min: 3, max: 150),
           ),
           const SizedBox(height: 16),
@@ -200,7 +200,7 @@ class _VehicleFormState extends State<VehicleForm> {
               Expanded(
                 child: TextFormField(
                   controller: _brand,
-                  decoration: const InputDecoration(labelText: 'Brand *'),
+                  decoration: const InputDecoration(labelText: 'Merek *'),
                   validator: (v) => _required(v, 'Brand', max: 60),
                 ),
               ),
@@ -222,10 +222,10 @@ class _VehicleFormState extends State<VehicleForm> {
                   controller: _year,
                   keyboardType: TextInputType.number,
                   inputFormatters: digits,
-                  decoration: const InputDecoration(labelText: 'Year *'),
+                  decoration: const InputDecoration(labelText: 'Tahun *'),
                   validator: (v) {
                     final y = int.tryParse((v ?? '').trim());
-                    if (y == null) return 'Year is required';
+                    if (y == null) return 'Harus memasukkan tahun';
                     if (y < 1900 || y > 2100) return '1900-2100';
                     return null;
                   },
@@ -237,7 +237,7 @@ class _VehicleFormState extends State<VehicleForm> {
                   controller: _mileage,
                   keyboardType: TextInputType.number,
                   inputFormatters: digits,
-                  decoration: const InputDecoration(labelText: 'Mileage (km)'),
+                  decoration: const InputDecoration(labelText: 'Kilometer'),
                 ),
               ),
             ],
@@ -247,10 +247,10 @@ class _VehicleFormState extends State<VehicleForm> {
             controller: _price,
             keyboardType: TextInputType.number,
             inputFormatters: digits,
-            decoration: const InputDecoration(labelText: 'Price *', prefixText: 'Rp '),
+            decoration: const InputDecoration(labelText: 'Harga *', prefixText: 'Rp '),
             validator: (v) {
               final p = int.tryParse((v ?? '').trim());
-              if (p == null || p <= 0) return 'Enter a price greater than 0';
+              if (p == null || p <= 0) return 'Masukkan nilai harga yang lebih dari 0';
               return null;
             },
           ),
@@ -261,7 +261,7 @@ class _VehicleFormState extends State<VehicleForm> {
                 child: DropdownButtonFormField<String?>(
                   value: _transmission,
                   isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'Transmission'),
+                  decoration: const InputDecoration(labelText: 'Transmisi'),
                   items: _options(_transmissions, _transmission),
                   onChanged: (v) => setState(() => _transmission = v),
                 ),
@@ -271,7 +271,7 @@ class _VehicleFormState extends State<VehicleForm> {
                 child: DropdownButtonFormField<String?>(
                   value: _fuel,
                   isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'Fuel type'),
+                  decoration: const InputDecoration(labelText: 'Bahan bakar'),
                   items: _options(_fuels, _fuel),
                   onChanged: (v) => setState(() => _fuel = v),
                 ),
@@ -281,8 +281,8 @@ class _VehicleFormState extends State<VehicleForm> {
           const SizedBox(height: 16),
           TextFormField(
             controller: _city,
-            decoration: const InputDecoration(labelText: 'City'),
-            validator: (v) => (v ?? '').trim().length > 80 ? 'At most 80 characters' : null,
+            decoration: const InputDecoration(labelText: 'Lokasi'),
+            validator: (v) => (v ?? '').trim().length > 80 ? 'Maksimal 80 karakter' : null,
           ),
           const SizedBox(height: 16),
           TextFormField(
@@ -290,18 +290,18 @@ class _VehicleFormState extends State<VehicleForm> {
             minLines: 3,
             maxLines: 8,
             decoration: const InputDecoration(
-              labelText: 'Description',
+              labelText: 'Deskripsi',
               alignLabelWithHint: true,
             ),
-            validator: (v) => (v ?? '').length > 5000 ? 'At most 5000 characters' : null,
+            validator: (v) => (v ?? '').length > 5000 ? 'Maksimal 5000 karakter' : null,
           ),
 
           // ---- specs -------------------------------------------------
           const SizedBox(height: 24),
-          Text('Specifications',
+          Text('Spesifikasi',
               style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
-          Text('Optional extras such as Color, Engine, Seats.',
+          Text('Spesifikasi tambahan seperti Warna, Mesin, Kursi.',
               style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey)),
           const SizedBox(height: 8),
           for (var i = 0; i < _specs.length; i++)
@@ -313,18 +313,18 @@ class _VehicleFormState extends State<VehicleForm> {
                   Expanded(
                     child: TextField(
                       controller: _specs[i].key,
-                      decoration: const InputDecoration(labelText: 'Name', isDense: true),
+                      decoration: const InputDecoration(labelText: 'Nama', isDense: true),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
                       controller: _specs[i].value,
-                      decoration: const InputDecoration(labelText: 'Value', isDense: true),
+                      decoration: const InputDecoration(labelText: 'Nilai', isDense: true),
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Remove',
+                    tooltip: 'Hapus',
                     icon: const Icon(Icons.close),
                     onPressed: () {
                       final row = _specs[i];
@@ -341,16 +341,16 @@ class _VehicleFormState extends State<VehicleForm> {
             child: TextButton.icon(
               onPressed: () => setState(() => _specs.add(_SpecRow())),
               icon: const Icon(Icons.add),
-              label: const Text('Add specification'),
+              label: const Text('Tambahkan spesifikasi'),
             ),
           ),
 
           // ---- photos ------------------------------------------------
           const SizedBox(height: 16),
-          Text('Photos',
+          Text('Foto',
               style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
-          Text('JPEG, PNG or WebP, up to 5 MB each.',
+          Text('Foto JPEG, PNG, atau WebP, maksimal 5 MB per foto.',
               style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey)),
           const SizedBox(height: 8),
           if (_images.isNotEmpty)
@@ -394,7 +394,7 @@ class _VehicleFormState extends State<VehicleForm> {
             child: OutlinedButton.icon(
               onPressed: _busy ? null : _addPhotos,
               icon: const Icon(Icons.add_photo_alternate_outlined),
-              label: Text('Add photos (${_images.length}/${widget.maxNewImages})'),
+              label: Text('Tambahkan foto (${_images.length}/${widget.maxNewImages})'),
             ),
           ),
 

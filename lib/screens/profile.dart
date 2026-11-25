@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
@@ -6,14 +7,14 @@ import '../utils/format.dart';
 import '../widget/common.dart';
 import 'about.dart';
 
-class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfileScreenState extends State<ProfileScreen> {
   bool _busy = false;
 
   @override
@@ -74,7 +75,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final ok = await confirmDialog(
       context,
       title: 'Log out?',
-      message: 'You will need to sign in again to see your transactions.',
+      message: 'Anda harus sign in lagi untuk melihat atau melakukan transaksi.',
       confirmLabel: 'Log out',
     );
     if (ok) await AuthService.instance.logout();
@@ -90,7 +91,7 @@ class _ProfilePageState extends State<ProfilePage> {
         final theme = Theme.of(context);
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Profile')),
+          appBar: AppBar(title: const Text('Profil')),
           body: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),
@@ -117,12 +118,12 @@ class _ProfilePageState extends State<ProfilePage> {
                           bottom: 0,
                           child: PopupMenuButton<String>(
                             enabled: !_busy,
-                            tooltip: 'Profile picture',
+                            tooltip: 'Foto profil',
                             onSelected: (s) => s == 'change' ? _changePicture() : _removePicture(),
                             itemBuilder: (_) => [
-                              const PopupMenuItem(value: 'change', child: Text('Choose photo')),
+                              const PopupMenuItem(value: 'change', child: Text('Pilih foto')),
                               if (user.profilePictureUrl != null)
-                                const PopupMenuItem(value: 'remove', child: Text('Remove photo')),
+                                const PopupMenuItem(value: 'remove', child: Text('Hapus foto')),
                             ],
                             child: CircleAvatar(
                               radius: 18,
@@ -148,19 +149,19 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('About me',
+                          Text('Tentang saya',
                               style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                           const SizedBox(height: 6),
                           Text(
                             (user.description ?? '').isEmpty
-                                ? 'No description yet.'
+                                ? 'Belum ada deskripsi.'
                                 : user.description!,
                             style: (user.description ?? '').isEmpty
                                 ? const TextStyle(color: Colors.grey)
                                 : null,
                           ),
                           const SizedBox(height: 12),
-                          Text('Member since ${formatDate(user.createdAt).split(',').first}',
+                          Text('Member sejak ${formatDate(user.createdAt).split(',').first}',
                               style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey)),
                         ],
                       ),
@@ -169,23 +170,23 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 8),
                   ListTile(
                     leading: const Icon(Icons.edit_outlined),
-                    title: const Text('Edit profile'),
+                    title: const Text('Edit profil'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => _edit(user),
                   ),
                   ListTile(
                     leading: const Icon(Icons.receipt_long_outlined),
-                    title: const Text('My transactions'),
+                    title: const Text('Transaksi saya'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => AppEvents.selectedTab.value = 1,
                   ),
                   ListTile(
                     leading: const Icon(Icons.info_outline),
-                    title: const Text('About'),
+                    title: const Text('Tentang aplikasi'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const AboutPage()),
+                      MaterialPageRoute(builder: (_) => const AboutScreen()),
                     ),
                   ),
                   const Divider(),
@@ -264,7 +265,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Edit profile'),
+      title: const Text('Edit profil'),
       content: SizedBox(
         width: 420,
         child: SingleChildScrollView(
@@ -278,9 +279,9 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                   decoration: const InputDecoration(labelText: 'Username'),
                   validator: (v) {
                     final t = (v ?? '').trim();
-                    if (t.length < 3 || t.length > 30) return 'Must be 3-30 characters';
+                    if (t.length < 3 || t.length > 30) return 'Username harus memiliki 3-30 karakter';
                     if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(t)) {
-                      return 'Only letters, numbers and underscores';
+                      return 'Username hanya boleh memiliki huruf, angka, dan underscore';
                     }
                     return null;
                   },
@@ -291,10 +292,10 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                   minLines: 3,
                   maxLines: 6,
                   decoration: const InputDecoration(
-                    labelText: 'About me',
+                    labelText: 'Tentang saya',
                     alignLabelWithHint: true,
                   ),
-                  validator: (v) => (v ?? '').length > 1000 ? 'At most 1000 characters' : null,
+                  validator: (v) => (v ?? '').length > 1000 ? 'Maksimal 1000 karakter' : null,
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: 12),
@@ -308,7 +309,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
       actions: [
         TextButton(
           onPressed: _busy ? null : () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: const Text('Batal'),
         ),
         FilledButton(
           onPressed: _busy ? null : _save,
@@ -318,7 +319,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                   height: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Save'),
+              : const Text('Simpan'),
         ),
       ],
     );
