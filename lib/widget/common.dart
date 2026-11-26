@@ -34,7 +34,7 @@ Future<bool> confirmDialog(
       title: Text(title),
       content: Text(message),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Back')),
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Kembali')),
         FilledButton(
           style: destructive
               ? FilledButton.styleFrom(backgroundColor: Theme.of(ctx).colorScheme.error)
@@ -50,9 +50,20 @@ Future<bool> confirmDialog(
 
 /// Coloured pill for vehicle status (available/pending/sold) and transaction
 /// status (pending/completed/cancelled).
+///
+/// [status] is always the English code sent by the API. Colours are chosen from
+/// the code; only the displayed label is translated (see [_labels]).
 class StatusChip extends StatelessWidget {
   final String status;
   const StatusChip({super.key, required this.status});
+
+  static const Map<String, String> _labels = {
+    'available': 'Tersedia',
+    'pending': 'Dalam proses',
+    'sold': 'Terjual',
+    'completed': 'Selesai',
+    'cancelled': 'Dibatalkan',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +89,7 @@ class StatusChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        capitalize(status),
+        _labels[status] ?? capitalize(status),
         style: TextStyle(color: color.shade900, fontSize: 12, fontWeight: FontWeight.w600),
       ),
     );

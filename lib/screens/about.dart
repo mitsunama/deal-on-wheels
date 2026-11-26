@@ -40,6 +40,9 @@ class AboutScreen extends StatelessWidget {
               const _Step(n: 3, text: 'Kedua belah pihak dapat membatalkan transaksi yang berjalan, '
                   'kendaraan akan kembali ditawarkan.'),
               const SizedBox(height: 24),
+              Text('Periksa kondisi kendaraan dan fisik anda sebelum berkendara, dan hati-hati di jalan.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),),
               Text('Server: ${api.baseUrl}',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey)),

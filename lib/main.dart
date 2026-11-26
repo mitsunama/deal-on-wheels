@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'services/auth_service.dart';
 import 'widget/navigation.dart';
@@ -20,7 +21,9 @@ class DealOnWheelsApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFE8590C)),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF202020))
+        .copyWith(primary: const Color(0xFF202020), onPrimary: Colors.white),
+        fontFamily: 'Barlow',
         inputDecorationTheme: const InputDecorationTheme(border: OutlineInputBorder()),
       ),
       home: const AuthGate(),

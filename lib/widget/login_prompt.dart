@@ -31,7 +31,10 @@ class LoginPrompt extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF141414),
+        foregroundColor: Colors.white,
+        title: Text(title)),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -47,7 +50,7 @@ class LoginPrompt extends StatelessWidget {
                 FilledButton.icon(
                   onPressed: () => requireLogin(context),
                   icon: const Icon(Icons.login),
-                  label: const Text('Log in or create account'),
+                  label: const Text('Login atau buat akun'),
                   style: FilledButton.styleFrom(
                     minimumSize: const Size(0, 48),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

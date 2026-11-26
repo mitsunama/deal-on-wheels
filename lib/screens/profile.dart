@@ -91,7 +91,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final theme = Theme.of(context);
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Profil')),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFF141414),
+            foregroundColor: Colors.white,
+            title: const Text('Profil')),
           body: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),

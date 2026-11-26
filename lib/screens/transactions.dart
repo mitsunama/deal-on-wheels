@@ -237,6 +237,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xFF141414),
+        foregroundColor: Colors.white,
         title: const Text('Transaksi'),
         actions: [
           IconButton(

@@ -411,6 +411,8 @@ class _ShowroomScreenState extends State<ShowroomScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xFF141414),
+        foregroundColor: Colors.white,
         title: const Text('Showroom'),
         actions: [
           if (!AuthService.instance.isLoggedIn)
@@ -508,7 +510,7 @@ class _VehicleCard extends StatelessWidget {
                     v.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 4),
                   Text(
