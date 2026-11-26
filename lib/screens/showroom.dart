@@ -420,6 +420,7 @@ class _ShowroomScreenState extends State<ShowroomScreen> {
               onPressed: () => requireLogin(context),
               icon: const Icon(Icons.login),
               label: const Text('Log in'),
+              style: TextButton.styleFrom(foregroundColor: Colors.white),
             ),
           const SizedBox(width: 8),
         ],
