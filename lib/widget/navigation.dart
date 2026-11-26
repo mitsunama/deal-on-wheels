@@ -47,8 +47,8 @@ class MainNavigation extends StatelessWidget {
             onDestinationSelected: (i) => AppEvents.selectedTab.value = i,
             destinations: const [
               NavigationDestination(
-                icon: Icon(Icons.directions_car_outlined),
-                selectedIcon: Icon(Icons.directions_car),
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home),
                 label: 'Showroom',
               ),
               NavigationDestination(

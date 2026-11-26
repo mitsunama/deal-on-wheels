@@ -32,7 +32,7 @@ class LoginPrompt extends StatelessWidget {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF141414),
+        backgroundColor: const Color(0xFF303030),
         foregroundColor: Colors.white,
         title: Text(title)),
       body: Center(
