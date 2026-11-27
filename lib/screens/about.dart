@@ -16,7 +16,7 @@ class AboutScreen extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.all(24),
             children: [
-              Icon(Icons.directions_car_filled, size: 72, color: theme.colorScheme.primary),
+              Image.asset('icon/key icon.png', height: 72,),
               const SizedBox(height: 12),
               Text('Deal on Wheels',
                   textAlign: TextAlign.center,

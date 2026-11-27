@@ -63,7 +63,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Icon(Icons.directions_car_filled, size: 64, color: theme.colorScheme.primary),
+                    Image.asset(
+                      'icon/key icon.png',
+                      height: 64,
+                    ),
                     const SizedBox(height: 12),
                     Text('Deal on Wheels',
                         textAlign: TextAlign.center,

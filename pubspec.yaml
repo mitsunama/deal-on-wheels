@@ -40,6 +40,12 @@ dependencies:
   image: ^4.13.1
   image_picker: ^1.2.4
   google_fonts: ^9.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  image_path: "icon/key icon.png"
+  android: true
+  ios: true
 
 dev_dependencies:
   flutter_test:
@@ -64,7 +70,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
+    - icon/key icon.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
