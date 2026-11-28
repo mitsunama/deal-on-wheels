@@ -9,6 +9,7 @@ import '../utils/format.dart';
 import '../widget/common.dart';
 import '../widget/image_viewer.dart';
 import '../widget/login_prompt.dart';
+import '../widget/wishlist_button.dart';
 import 'update_vehicle.dart';
 
 class VehicleDetailScreen extends StatefulWidget {
@@ -89,7 +90,7 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
     try {
       await api.createTransaction(v.id, agreedPrice: offer == v.price ? null : offer);
       AppEvents.dataChanged();
-      AppEvents.selectedTab.value = 1;
+      AppEvents.selectedTab.value = AppEvents.tabTransactions;
       messenger.showSnackBar(const SnackBar(
         behavior: SnackBarBehavior.floating,
         content: Text('Transaksi dimulai. Menunggu konfirmasi penjual.'),
@@ -477,6 +478,10 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(v?.title ?? 'Kendaraan', overflow: TextOverflow.ellipsis),
+        actions: [
+          if (v != null) WishlistButton(vehicleId: v.id, sellerId: v.sellerId),
+          const SizedBox(width: 4),
+        ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())

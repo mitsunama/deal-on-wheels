@@ -9,6 +9,7 @@ import '../services/auth_service.dart';
 import '../utils/format.dart';
 import '../widget/common.dart';
 import '../widget/login_prompt.dart';
+import '../widget/wishlist_button.dart';
 import 'create_vehicle.dart';
 import 'vehicle_detail.dart';
 
@@ -395,7 +396,7 @@ class _ShowroomScreenState extends State<ShowroomScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           final v = _items[i];
-          return _VehicleCard(
+          return VehicleCard(
             vehicle: v,
             onTap: () => Navigator.push(
               context,
@@ -442,11 +443,12 @@ class _ShowroomScreenState extends State<ShowroomScreen> {
   }
 }
 
-class _VehicleCard extends StatelessWidget {
+/// Grid card for a vehicle (shared by the showroom and the wishlist).
+class VehicleCard extends StatelessWidget {
   final Vehicle vehicle;
   final VoidCallback onTap;
 
-  const _VehicleCard({required this.vehicle, required this.onTap});
+  const VehicleCard({super.key, required this.vehicle, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -499,6 +501,15 @@ class _VehicleCard extends StatelessWidget {
                   ),
                   if (v.status != 'available')
                     Positioned(top: 8, right: 8, child: StatusChip(status: v.status)),
+                  Positioned(
+                    bottom: 4,
+                    right: 4,
+                    child: WishlistButton(
+                      vehicleId: v.id,
+                      sellerId: v.sellerId,
+                      overlay: true,
+                    ),
+                  ),
                 ],
               ),
             ),

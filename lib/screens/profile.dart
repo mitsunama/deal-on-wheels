@@ -6,6 +6,7 @@ import '../services/auth_service.dart';
 import '../utils/format.dart';
 import '../widget/common.dart';
 import 'about.dart';
+import 'wishlist.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -182,6 +183,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     title: const Text('Transaksi saya'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => AppEvents.selectedTab.value = 1,
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.star_outline),
+                    title: const Text('Wishlist'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const WishlistScreen()),
+                    ),
                   ),
                   ListTile(
                     leading: const Icon(Icons.info_outline),

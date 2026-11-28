@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../screens/profile.dart';
 import '../screens/showroom.dart';
 import '../screens/transactions.dart';
+import '../screens/wishlist.dart';
 import '../services/auth_service.dart';
 import 'login_prompt.dart';
 
@@ -27,6 +28,13 @@ class MainNavigation extends StatelessWidget {
             children: [
               const ShowroomScreen(),
               loggedIn
+                  ? const WishlistScreen()
+                  : const LoginPrompt(
+                      icon: Icons.favorite_border,
+                      title: 'Wishlist',
+                      message: 'Login untuk melihat kendaraan yang Anda simpan.',
+                    ),
+              loggedIn
                   ? const TransactionsScreen()
                   : const LoginPrompt(
                       icon: Icons.receipt_long,
@@ -50,6 +58,11 @@ class MainNavigation extends StatelessWidget {
                 icon: Icon(Icons.home_outlined),
                 selectedIcon: Icon(Icons.home),
                 label: 'Showroom',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.favorite_border),
+                selectedIcon: Icon(Icons.favorite),
+                label: 'Wishlist',
               ),
               NavigationDestination(
                 icon: Icon(Icons.receipt_long_outlined),

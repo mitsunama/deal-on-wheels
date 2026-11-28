@@ -260,6 +260,26 @@ class ApiService {
     await _delete('/vehicles/$vehicleId/images/$imageId');
   }
 
+  // ------------------------------------------------------------ wishlist
+
+  Future<Paged<Vehicle>> getWishlist({int page = 1, int limit = 20}) async {
+    final j = await _get('/wishlist', {'page': page, 'limit': limit});
+    return Paged.fromJson(Map<String, dynamic>.from(j as Map), Vehicle.fromJson);
+  }
+
+  Future<List<String>> getWishlistIds() async {
+    final j = await _get('/wishlist/ids');
+    return (j['ids'] as List).map((e) => e.toString()).toList();
+  }
+
+  Future<void> addToWishlist(String vehicleId) async {
+    await _json('PUT', '/wishlist/$vehicleId');
+  }
+
+  Future<void> removeFromWishlist(String vehicleId) async {
+    await _delete('/wishlist/$vehicleId');
+  }
+
   // -------------------------------------------------------- transactions
 
   /// Buyer starts a deal. [agreedPrice] defaults to the listed price.

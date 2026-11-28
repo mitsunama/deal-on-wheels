@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/models.dart';
 import 'api_service.dart';
+import 'wishlist_service.dart';
 
 /// Lets AuthService clear pushed screens (dialogs, sheets, detail pages) on logout.
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -18,8 +19,12 @@ class AppEvents {
   static final ValueNotifier<int> dataVersion = ValueNotifier<int>(0);
   static void dataChanged() => dataVersion.value++;
 
-  /// Bottom navigation index: 0 showroom, 1 transactions, 2 profile.
-  static final ValueNotifier<int> selectedTab = ValueNotifier<int>(0);
+  /// Bottom navigation indexes.
+  static const int tabShowroom = 0;
+  static const int tabWishlist = 1;
+  static const int tabTransactions = 2;
+  static const int tabProfile = 3;
+  static final ValueNotifier<int> selectedTab = ValueNotifier<int>(tabShowroom);
 }
 
 class AuthService extends ChangeNotifier {
@@ -44,6 +49,7 @@ class AuthService extends ChangeNotifier {
       api.token = saved;
       try {
         _user = await api.getMe();
+        unawaited(WishlistService.instance.load());
       } on ApiException catch (e) {
         api.token = null;
         // Only forget the token when the server says it is no longer valid;
@@ -60,6 +66,7 @@ class AuthService extends ChangeNotifier {
   Future<void> _startSession(AuthResult r) async {
     api.token = r.token;
     _user = r.user;
+    unawaited(WishlistService.instance.load());
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_tokenKey, r.token);
     notifyListeners();
@@ -79,7 +86,8 @@ class AuthService extends ChangeNotifier {
   Future<void> logout() async {
     api.token = null;
     _user = null;
-    AppEvents.selectedTab.value = 0;
+    WishlistService.instance.clear();
+    AppEvents.selectedTab.value = AppEvents.tabShowroom;
     // Drop any pushed routes so the login screen (home) is what the user sees.
     rootNavigatorKey.currentState?.popUntil((r) => r.isFirst);
     final prefs = await SharedPreferences.getInstance();
